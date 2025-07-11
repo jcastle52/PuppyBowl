@@ -1,0 +1,14 @@
+h1 {
+  text-align: center;
+}
+
+main {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (width >= 600px) {
+  main {
+    grid-template-columns: 1fr 1fr;
+  }
+}

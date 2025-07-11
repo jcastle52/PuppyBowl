@@ -1,207 +1,117 @@
-const API_URL = "https://fsa-puppy-bowl.herokuapp.com/api/2505-FTB-CT-WEB-PT";
-const $form = document.querySelector("form");
-const $main = document.querySelector("main");
-const $loading = document.querySelector("#loading-screen")
-let teams = [];
+const HEADER = "https://fsa-puppy-bowl.herokuapp.com/api/2505-FTB-CT-WEB-PT";
+const NAME = "JasielC";
+const API = HEADER + NAME;
 
-function showLoading () {
-    $loading.setAttribute("style", "display:flex;");
-}
+const $app = document.querySelector("#app");
 
-function hideLoading () {
-    $loading.setAttribute("style", "display:none;");
-}
+// State Variables
+let playerArr = [];
+let teamArr = [];
+let SelectedPlayer;
 
-async function fetchAllPlayers () {
-    let playerArr = [];
-    try {
-    //see "Get all players"
-        const response = await fetch(API_URL + "JasielC/players");
-        const result = await response.json();
-        playerArr = result.data.players
-        console.log(playerArr);
-    } catch (err) {
-        console.error(err.message);
-    }
-    return playerArr;
-}
+//-------------------------------------------------------------------------------------------------------------
+// API FUNCTIONS
 
-async function createPlayer (name, breed, imageUrl) {
-    const newPlayer = {
-        name: name,
-        breed: breed,
-        imageUrl: imageUrl,
-    }
+/* Gets all the players data stored in the API and updates the variable "playerArr"
+and then re-renders the page*/
+const GetAllPlayers = async () => {
+  try {
+    const response = await fetch(API + "/players");
+    const result = await response.json();
+    playerArr = result.data.players;
+    Render();
+  } catch (error) {
+    console.error(error.message);
+  }
+};
 
-    try {
-        // see "Invite a new player"
-        // remember methods and headers
-        const response = await fetch(
-      (API_URL + "JasielC/players"),
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newPlayer),
-      }
-    );
+/*Adds a new player to the API and then re-renders the page*/
+const AddPlayer = async (name, breed, imageUrl) => {
+  const newPlayer = {
+    name: name,
+    breed: breed,
+    imageUrl: imageUrl,
+  };
 
-        //return json.data.newPlayer;
-    } catch (err) {
-        console.error(err.message);
-    }
-}
-
-async function fetchPlayerById (id) {
-    try {
-        // see "Get a player by ID"
-        const response = await fetch(API_URL + "JasielC/players/" + id);
-        const result = await response.json();
-        const playerObj = result.data.player
-        console.log(playerObj);
-    } catch (err) {
-        console.error(err.message);
-    }
-}
-
-async function removePlayerById (id) {
-    try {
-        // see "Remove a player by ID"
-        // remember to set method
-         const response = await fetch(
-        (API_URL + "JasielC/players/" + id),
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    } catch (err) {
-        console.error(err.message);
-    }
-}
-
-async function fetchAllTeams () {
-    try {
-        // see "Get all teams"
-    } catch (err) {
-        console.error(err.message);
-    }
-}
-
-async function renderAllPlayers () {
-    const playerList = await fetchAllPlayers();
-    // console.log(playerList);
-    const $players = document.createElement("ul");
-    $players.id = "player-list";
-    playerList.forEach(player => {
-        const $player = document.createElement("li");
-        $player.className = "player-card";
-        $player.innerHTML += `
-        <h2>${player.name}</h2>
-        <p>${player.breed}</p>
-        <img src="${player.imageUrl}" alt="Picture of ${player.name}" />
-        <section class="player-actions">
-            <button class="details-btn">See Details</button>
-            <button class="remove-btn">Remove Player</button>
-        </section>
-        `;
-        $detailsBtn = $player.querySelector(".details-btn");
-        $removeBtn = $player.querySelector(".remove-btn");
-
-        $detailsBtn.addEventListener("click", async () => {
-            showLoading();
-            try {
-                await renderSinglePlayer(player.id);
-            } catch (err) {
-                console.error(err.message);
-            } finally {
-                hideLoading();
-            }
-        });
-
-        $removeBtn.addEventListener("click", async () => {
-            try {
-                const confirmRemove = confirm(`Are you sure you want to remove ${player.name} from the roster?`);
-                if (!confirmRemove) return;
-                showLoading();
-                await removePlayerById(player.id);
-                await renderAllPlayers();
-            } catch (err) {
-                console.error(err.message);
-            } finally {
-                hideLoading();
-            }
-        })
-
-        $players.appendChild($player);
+  try {
+    const response = await fetch(API + "/players", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newPlayer),
     });
+    Render();
+  } catch (error) {
+    console.error(error.message);
+  }
+};
 
-    $main.innerHTML = "";
-    $main.appendChild($players);
-}
+//Removes player from API given ID and re-renders the page
+const RemovePlayer = async (id) => {
+  try {
+    const response = await fetch(API + "/players/" + id, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    Render();
+  } catch (error) {
+    console.error(error.message);
+  }
+};
 
-async function renderSinglePlayer (id) {
-    const player = await fetchPlayerById(id);
-    
-    $main.innerHTML = `
-    <section id="single-player">
-        <h2>${player.name}/${player.team?.name || "Unassigned"} - ${player.status}</h2>
-        <p>${player.breed}</p>
-        <img src="${player.imageUrl}" alt="Picture of ${player.name}" />
-        <button id="back-btn">Back to List</button>
-    </section>
+// Gets player from the API given ID and returns the player data in an object, Used for Player Details section
+const GetPlayer = async (id) => {
+  try {
+    const response = await fetch(API + "/players/" + id);
+    const result = await response.json();
+    return result.data.player;
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+//Gets teams from API and updates the "teamArr" variable
+const GetTeams = async () => {
+  try {
+    const response = await fetch(API + "/teams");
+    const result = await response.json();
+    teamArr = result.data.teams;
+  } catch (error) {
+    console.error(error.message);
+  }
+};
+
+//--------------------------------------------------------------------------------------------------
+//COMPONENT FUNCTIONS
+
+
+
+//Gets called after a state variable has been changed. Also Renders the initial page elements
+const Render = () => {
+  $app.innerHTML = `
+    <h1>Puppy Bowl</h1>
+    <main>
+     <section>
+      <h2>Players List</h2>
+      <PlayersList></PlayersList>
+     </section>
+     <section>
+      <h2>Player Details</h2>
+      <SelectedPlayer></SelectedPlayer>
+     </section>
+     <section>
+      <h2>Invite A Puppy</h2>
+      <InvitePuppy></InvitePuppy>
+     </section>
+    </main>
     `;
 
-    $main.querySelector("#back-btn").addEventListener("click", async () => {
-        showLoading();
-        try {
-            await renderAllPlayers();
-        } catch (err) {
-            console.error(err.message);
-        } finally {
-            hideLoading();
-        }
-    });
-}
+    $app.querySelector("PlayersList").replaceWith();
+    $app.querySelector("SelectedPlayer").replaceWith();
+    $app.querySelector("InvitePuppy").replaceWith();
+};
 
-async function init () {
-    try {
-        await renderAllPlayers();
-        teams = await fetchAllTeams();
-    } catch (err) {
-        console.error(err);
-    } finally {
-        hideLoading();
-    }
-}
-
-$form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.querySelector("#new-name").value;
-    const breed = document.querySelector("#new-breed").value;
-    const image = document.querySelector("#new-image").value;
-    
-    showLoading();
-    try {
-        await createPlayer(name, breed, image);
-        renderAllPlayers();
-    } catch (err) {
-        console.error(err.message);
-    } finally {
-        document.querySelector("#new-name").value = "";
-        document.querySelector("#new-breed").value = "";
-        document.querySelector("#new-image").value = "";
-        hideLoading();
-    }
-})
-
-init();
-// createPlayer("tobey","dachshund","https://www.vidavetcare.com/wp-content/uploads/sites/234/2022/04/dachshund-dog-breed-info.jpeg");
-// fetchAllPlayers();
-// fetchPlayerById(38967);
-// removePlayerById(38967);
-// fetchAllTeams();
+Render();
