@@ -83,6 +83,7 @@ const GetTeams = async () => {
 //--------------------------------------------------------------------------------------------------
 //COMPONENT FUNCTIONS
 
+// this function returns a form the user will use to add to the roster. 
 const AddPlayerComponent = () => {
   const $form = document.createElement("form");
   $form.innerHTML = `
@@ -95,12 +96,13 @@ const AddPlayerComponent = () => {
     </form>
     `;
 
+    //This eventlistener adds a player to the API and then re-renders the page with the updated verison of the API
   $form.addEventListener("submit", (event) => {
     event.preventDefault();
     const newPlayer = {
       name: $form.querySelector("#name").value,
       breed: $form.querySelector("#breed").value,
-      
+
     };
     AddPlayer(newPlayer);
   });
