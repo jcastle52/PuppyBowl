@@ -12,3 +12,13 @@ main {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+ul {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+li {
+  margin: 2%;
+}

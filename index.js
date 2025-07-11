@@ -24,13 +24,7 @@ const GetAllPlayers = async () => {
 };
 
 /*Adds a new player to the API and then re-renders the page*/
-const AddPlayer = async (name, breed, imageUrl) => {
-  const newPlayer = {
-    name: name,
-    breed: breed,
-    imageUrl: imageUrl,
-  };
-
+const AddPlayer = async (newPlayer) => {
   try {
     const response = await fetch(API + "/players", {
       method: "POST",
@@ -39,7 +33,7 @@ const AddPlayer = async (name, breed, imageUrl) => {
       },
       body: JSON.stringify(newPlayer),
     });
-    await GetAllPlayers();
+    await GetAllPlayers(); // updates state before re-rendering
     Render();
   } catch (error) {
     console.error(error.message);
@@ -56,7 +50,7 @@ const RemovePlayer = async (id) => {
       },
     });
     selectedPlayer = null;
-    await GetAllPlayers();
+    await GetAllPlayers(); // updates state before re-rendering
     Render();
   } catch (error) {
     console.error(error.message);
@@ -89,7 +83,30 @@ const GetTeams = async () => {
 //--------------------------------------------------------------------------------------------------
 //COMPONENT FUNCTIONS
 
+const AddPlayerComponent = () => {
+  const $form = document.createElement("form");
+  $form.innerHTML = `
+    <form>
+     <label>Name:</label>
+     <input type="text" id="name"><br><br>
+     <label>Breed:</label>
+     <input type="text" id="breed"><br><br>
+     <input type="submit" value="Add Player">
+    </form>
+    `;
 
+  $form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const newPlayer = {
+      name: $form.querySelector("#name").value,
+      breed: $form.querySelector("#breed").value,
+      
+    };
+    AddPlayer(newPlayer);
+  });
+
+  return $form;
+};
 
 //Returns the a Team name given the team id, Its used it the player details component
 const GetTeam = (teamId) => {
@@ -108,7 +125,9 @@ const PlayerDetailsComponent = () => {
   } else {
     const $player = document.createElement("section");
     $player.innerHTML = `
-        <img src=${selectedPlayer.imageUrl} alt=${selectedPlayer.name} width="200" height="300">
+        <img src=${selectedPlayer.imageUrl} alt=${
+      selectedPlayer.name
+    } width="200" height="300">
         <h3>Name: ${selectedPlayer.name}</h3>
         <h3>ID: ${selectedPlayer.id}</h3>
         <h3>Status: ${selectedPlayer.status}</h3>
@@ -118,6 +137,8 @@ const PlayerDetailsComponent = () => {
         `;
 
     const $delete = $player.querySelector("#delete");
+
+    //This eventlistener removes a player from the API and then re-renders the page with the updated verison of the API
     $delete.addEventListener("click", () => RemovePlayer(selectedPlayer.id));
 
     return $player;
@@ -132,8 +153,8 @@ const PlayerListComponent = () => {
     const $player = document.createElement("li");
     $player.innerHTML = `
         <a href="#selected">
+        ${player.name} <br>
         <img src=${player.imageUrl} alt=${player.name} width="100" height="150">
-        ${player.name}
         </a>
         `;
     $list.append($player);
@@ -166,7 +187,7 @@ const Render = () => {
 
   $app.querySelector("PlayersList").replaceWith(PlayerListComponent());
   $app.querySelector("SelectedPlayer").replaceWith(PlayerDetailsComponent());
-  $app.querySelector("InvitePuppy").replaceWith();
+  $app.querySelector("InvitePuppy").replaceWith(AddPlayerComponent());
 };
 
 const Run = async () => {
