@@ -27,10 +27,27 @@ async function fetchAllPlayers () {
 }
 
 async function createPlayer (name, breed, imageUrl) {
+    const newPlayer = {
+        name: name,
+        breed: breed,
+        imageUrl: imageUrl,
+    }
+
     try {
         // see "Invite a new player"
         // remember methods and headers
-        return json.data.newPlayer;
+        const response = await fetch(
+      (API_URL + "JasielC/players"),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newPlayer),
+      }
+    );
+
+        //return json.data.newPlayer;
     } catch (err) {
         console.error(err.message);
     }
