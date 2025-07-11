@@ -56,6 +56,10 @@ async function createPlayer (name, breed, imageUrl) {
 async function fetchPlayerById (id) {
     try {
         // see "Get a player by ID"
+        const response = await fetch(API_URL + "JasielC/players/" + id);
+        const result = await response.json();
+        const playerObj = result.data.player
+        console.log(playerObj);
     } catch (err) {
         console.error(err.message);
     }
