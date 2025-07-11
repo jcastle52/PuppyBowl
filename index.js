@@ -69,6 +69,16 @@ async function removePlayerById (id) {
     try {
         // see "Remove a player by ID"
         // remember to set method
+         const response = await fetch(
+        (API_URL + "JasielC/players/" + id),
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
     } catch (err) {
         console.error(err.message);
     }
